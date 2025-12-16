@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Storage Page</title>
+</head>
+<body>
+  <h1>Upload & Download PDFs</h1>
+
+  <input type="file" id="fileInput" accept="application/pdf" />
+  <button id="uploadBtn">Upload PDF</button>
+
+  <h3>Available Files</h3>
+  <div id="fileList"></div>
+
+  <script type="module">
+    import { storage, ref, uploadBytes, getDownloadURL, listAll } from "./firebase-config.js";
+
+    const fileInput = document.getElementById("fileInput");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fileList = document.getElementById("fileList");
+
+    // Upload
+    uploadBtn.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) return alert("Please choose a file first!");
+
+        const fileRef = ref(storage, "pdfs/" + file.name);
+
+        await uploadBytes(fileRef, file);
+        alert("Uploaded!");
+        loadFiles();
+    })
+
+    // List & download
+    async function loadFiles() {
+      const listRef = ref(storage, "pdfs/");
+      const res = await listAll(listRef);
+
+      let html = "";
+      for (const item of res.items) {
+        const url = await getDownloadURL(item);
+        html += `<p><a href="${url}" target="_blank">${item.name}</a></p>`;
+      }
+      fileList.innerHTML = html;
+    }
+
+    loadFiles();
+
+  </script>
+</body>
+</html>

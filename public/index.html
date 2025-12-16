@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Page</title>
+</head>
+<body>
+  <h1>Welcome to My Firebase Site</h1>
+  <p>This is the home page.</p>
+
+  <button id="googleLogin">Sign in with Google</button>
+
+  <script type="module">
+    import { auth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "./firebase-config.js";
+
+    const loginBtn = document.getElementById("googleLogin");
+    const provider = new GoogleAuthProvider();
+
+    // If already logged in, go directly to secret page
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = "secret.html";
+      }
+    });
+
+    // Login and redirect
+    loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        window.location.href = "secret.html"; 
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    });
+  </script>
+</body>
+</html>
