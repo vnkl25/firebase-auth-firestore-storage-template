@@ -14,19 +14,31 @@
   <div id="fileList"></div>
 
   <script type="module">
-    import { storage, ref, uploadBytes, getDownloadURL, listAll } from "./firebase-config.js";
+    import { storage, auth, ref, uploadBytes, getDownloadURL, listAll, onAuthStateChanged } from "./firebase-config.js";
 
     const fileInput = document.getElementById("fileInput");
     const uploadBtn = document.getElementById("uploadBtn");
     const fileList = document.getElementById("fileList");
+
+    // Check authentication
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        loadFiles();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
 
     // Upload
     uploadBtn.addEventListener("click", async () => {
         const file = fileInput.files[0];
         if (!file) return alert("Please choose a file first!");
 
-        const fileRef = ref(storage, "pdfs/" + file.name);
-
+        const fileRef = ref(storage, "pdfs/" + currentUser.uid + "/" + file.name);
+      
         await uploadBytes(fileRef, file);
         alert("Uploaded!");
         loadFiles();
@@ -34,7 +46,7 @@
 
     // List & download
     async function loadFiles() {
-      const listRef = ref(storage, "pdfs/");
+      const listRef = ref(storage, "pdfs/" + currentUser.uid);
       const res = await listAll(listRef);
 
       let html = "";
@@ -44,8 +56,6 @@
       }
       fileList.innerHTML = html;
     }
-
-    loadFiles();
 
   </script>
 </body>
